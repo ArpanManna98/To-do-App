@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:todoapp/homepage.dart';
 
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  await Hive.openBox("taskBox");
   runApp(const MyApp());
 }
 
@@ -14,9 +17,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'To Do App',
-     debugShowCheckedModeBanner: false,
-      home:  MyHomePage(),
+      debugShowCheckedModeBanner: false,
+      home: MyHomePage(),
     );
   }
 }
-
