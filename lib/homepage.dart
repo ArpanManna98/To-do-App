@@ -27,7 +27,7 @@ class _MyHomePageState extends State<MyHomePage> {
     readData();
   }
 
-  // read Data from Hive database
+  // Read Data from Hive database
   readData() async {
     var data = taskBox.keys.map((key) {
       final item = taskBox.get(key);
@@ -39,7 +39,29 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  // Update Data from Hive database
+
+  updateData(int? key, Map<String, dynamic> data) async {
+    await taskBox.put(key, data);
+    readData();
+  }
+
+  // Delete Data from Hive database
+
+  deleteData(int? key) async {
+    await taskBox.delete(key);
+    readData();
+  }
+
   showFormModel(context, int? key) async {
+    titleController.clear();
+    taskController.clear();
+
+    if (key != null) {
+      final item = ourTasks.firstWhere((element) => element["key"] == key);
+      titleController.text = item["title"];
+      taskController.text = item["task"];
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -64,15 +86,21 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 10,
             ),
             ElevatedButton(
-                onPressed: () {
-                  var data = {
-                    "title": titleController.text,
-                    "task": taskController.text
-                  };
+              onPressed: () {
+                var data = {
+                  "title": titleController.text,
+                  "task": taskController.text
+                };
+                if (key == null) {
                   createData(data);
-                  Navigator.pop(context);
-                },
-                child: Text("Add Task")),
+                } else {
+                  updateData(key, data);
+                }
+
+                Navigator.pop(context);
+              },
+              child: Text(key == null ? "Add Task" : "Update Task"),
+            ),
           ],
         ),
       ),
@@ -100,6 +128,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: ListTile(
                   title: Text(currentTask["title"]),
                   subtitle: Text(currentTask["task"]),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () async {
+                          showFormModel(context, currentTask["key"]);
+                        },
+                        icon: Icon(Icons.edit),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          deleteData(currentTask["key"]);
+                        },
+                        icon: Icon(Icons.delete),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }));
